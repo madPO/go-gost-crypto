@@ -3,7 +3,7 @@ package hash
 import (
 	"errors"
 
-	common "github.com/go-gost-crypto/common"
+	"github.com/madpo/go-gost-crypto/pkg/common"
 )
 
 func takeHashMethod(cryptoProvider *C.HCRYPTPROV, hashType HashType) (*C.HCRYPTHASH, error) {
@@ -12,7 +12,7 @@ func takeHashMethod(cryptoProvider *C.HCRYPTPROV, hashType HashType) (*C.HCRYPTH
 	result := C.CryptCreateHash(*cryptoProvider, C.uint(hashType), 0, 0, &hashMethod)
 
 	if result == common.Failure {
-		// TODO: добавить обработку всех ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptcreatehash#return-value
+		// [ ] TODO: добавить обработку всех ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptcreatehash#return-value
 		return nil, errors.New("Не удается получить метод кэширования")
 	}
 
@@ -44,7 +44,7 @@ func ReadHashValue(hashMethod *C.HCRYPTHASH, size HSize) (*[]byte, error) {
 
 	result := C.CryptGetHashParam(*hashMethod, C.HP_HASHVAL, (*C.uchar)(&cbToBeSigned[0]), (*C.ulong)(&size), 0)
 
-	// TODO: обработать возможные ошибки https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptgethashparam#return-value
+	// [ ] TODO: обработать возможные ошибки https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptgethashparam#return-value
 	if result == Failure {
 		return nil, errors.New("Не удалось получить значение хэша")
 	}
@@ -62,7 +62,7 @@ func CalculateHashGOST3411_2012_256(cryptoProvider *C.HCRYPTPROV, data []byte) (
 
 	result := C.CryptHashData(*hashMethod, (*C.uchar)(&data[0]), (C.ulong)(len(data)), 0)
 
-	// TODO: обработать варианты ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-crypthashdata#return-value
+	// [ ] TODO: обработать варианты ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-crypthashdata#return-value
 	if result == Failure {
 		return nil, errors.New("Не удалось сформировать данные для хэширования")
 	}

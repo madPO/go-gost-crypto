@@ -1,7 +1,7 @@
 package common
 
 // нужно подключить все заголовки, чтобы C код тоже сбилдился
-//TODO: тут могут быть зависимые от платформы аргументы
+// [ ] TODO: тут могут быть зависимые от платформы аргументы
 // https://pkg.go.dev/cmd/cgo
 
 /*
@@ -24,6 +24,8 @@ import (
 )
 
 type CSPType int64
+
+type test C.HCRYPTPROV
 
 const (
 	GOST2001     CSPType = C.PROV_GOST_2001_DH
@@ -53,7 +55,7 @@ func TakeCSP(cspType CSPType) (*C.HCRYPTPROV, error) {
 	result := C.CryptAcquireContext(&cryptoProvider, nil, nil, C.ulong(cspType), C.CRYPT_VERIFYCONTEXT)
 
 	if result == Failure {
-		// TODO: добавить обработку всех ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptacquirecontexta#return-value
+		// [ ] TODO: добавить обработку всех ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptacquirecontexta#return-value
 		return nil, errors.New("Не удается получить csp")
 	}
 
