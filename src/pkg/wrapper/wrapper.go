@@ -1,4 +1,4 @@
-package main
+package wrapper
 
 // нужно подключить все заголовки, чтобы C код тоже сбилдился
 // [ ] TODO: тут могут быть зависимые от платформы аргументы
@@ -21,10 +21,37 @@ package main
 import "C"
 import (
 	"errors"
-	"fmt"
 )
 
+/*
+Тип CSP
+*/
 type CSPType int64
+
+/*
+Тип хэша
+*/ 
+type HashType uint
+
+/*
+Криптопровайдер
+*/
+type CryptoProvider C.HCRYPTPROV
+
+/*
+Хэш
+*/
+type CryptoHash C.HCRYPTHASH
+
+/*
+Размер хэша
+*/
+type HSize C.ulong
+
+var (
+	Size256 HSize = 32
+	Size512 HSize = 64
+)
 
 const (
 	GOST2001     CSPType = C.PROV_GOST_2001_DH
@@ -37,21 +64,22 @@ var (
 	Failure C.int = C.int(0)
 )
 
-type HashType uint
-
 const (
 	GOST3411          HashType = C.CALG_GR3411
 	GOST3411_2012_256 HashType = C.CALG_GR3411_2012_256
 	GOST3411_2012_512 HashType = C.CALG_GR3411_2012_512
 )
 
-func TakeCSP(cspType CSPType) (*C.HCRYPTPROV, error) {
+func TakeCSP(cspType CSPType) (*CryptoProvider, error) {
 	// ссылка на криптопровайдер
-	var cryptoProvider C.HCRYPTPROV
+	var cryptoProvider CryptoProvider
 
 	// PROV_GOST_2001_DH - это тип криптопровайдера. https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B8%D0%BF%D1%82%D0%BE%D0%BF%D1%80%D0%BE%D0%B2%D0%B0%D0%B9%D0%B4%D0%B5%D1%80
 	// CRYPT_VERIFYCONTEXT - признак того, что операций с закрытым ключом не будет
-	result := C.CryptAcquireContext(&cryptoProvider, nil, nil, C.ulong(cspType), C.CRYPT_VERIFYCONTEXT)
+	cryptoProvider_CType := (C.HCRYPTPROV)(cryptoProvider)
+	cspType_CType := C.ulong(cspType)
+
+	result := C.CryptAcquireContext(&cryptoProvider_CType, nil, nil, cspType_CType, C.CRYPT_VERIFYCONTEXT)
 
 	if result == Failure {
 		// [ ] TODO: добавить обработку всех ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptacquirecontexta#return-value
@@ -61,12 +89,15 @@ func TakeCSP(cspType CSPType) (*C.HCRYPTPROV, error) {
 	return &cryptoProvider, nil
 }
 
-func ReleaseCSP(cryptoProvider *C.HCRYPTPROV) {
+func ReleaseCSP(cryptoProvider *CryptoProvider) {
 	if cryptoProvider == nil {
 		return
 	}
 
-	result := C.CryptReleaseContext(*cryptoProvider, C.ulong(0))
+	cryptoProvider_CType := (*C.HCRYPTPROV)(cryptoProvider)
+	flag_CType := C.ulong(0)
+
+	result := C.CryptReleaseContext(*cryptoProvider_CType, flag_CType)
 
 	if result == Failure {
 		// обработать все возможные ошибки https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptreleasecontext#return-value
@@ -74,25 +105,33 @@ func ReleaseCSP(cryptoProvider *C.HCRYPTPROV) {
 	}
 }
 
-func TakeHashMethod(cryptoProvider *C.HCRYPTPROV, hashType HashType) (*C.HCRYPTHASH, error) {
-	var hashMethod C.HCRYPTHASH
+func TakeHashMethod(cryptoProvider *CryptoProvider, hashType HashType) (*CryptoHash, error) {
+	var hashMethod_CType C.HCRYPTHASH
+	var hashMethod CryptoHash
 
-	result := C.CryptCreateHash(*cryptoProvider, C.uint(hashType), 0, 0, &hashMethod)
+	cryptoProvider_CType := (*C.HCRYPTPROV)(cryptoProvider)
+	hashType_CType := C.uint(hashType)
+
+	result := C.CryptCreateHash(*cryptoProvider_CType, hashType_CType, 0, 0, &hashMethod_CType)
 
 	if result == Failure {
 		// [ ] TODO: добавить обработку всех ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptcreatehash#return-value
 		return nil, errors.New("Не удается получить метод кэширования")
 	}
 
+	hashMethod = (CryptoHash)(hashMethod_CType)
+
 	return &hashMethod, nil
 }
 
-func ReleaseHashMethod(hashMethod *C.HCRYPTHASH) {
+func ReleaseHashMethod(hashMethod *CryptoHash) {
 	if hashMethod == nil {
 		return
 	}
 
-	result := C.CryptDestroyHash(*hashMethod)
+	hashMethod_CType := (*C.HCRYPTHASH)(hashMethod)
+
+	result := C.CryptDestroyHash(*hashMethod_CType)
 
 	if result == Failure {
 		// обработать все возможные ошибки https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptdestroyhash#return-value
@@ -100,68 +139,17 @@ func ReleaseHashMethod(hashMethod *C.HCRYPTHASH) {
 	}
 }
 
-type HSize C.ulong
-
-var (
-	Size256 HSize = 32
-	Size512 HSize = 64
-)
-
-func ReadHashValue(hashMethod *C.HCRYPTHASH, size HSize) (*[]byte, error) {
+func ReadHashValue(hashMethod *CryptoHash, size HSize) (*[]byte, error) {
 	cbToBeSigned := make([]byte, size)
 
-	result := C.CryptGetHashParam(*hashMethod, C.HP_HASHVAL, (*C.uchar)(&cbToBeSigned[0]), (*C.ulong)(&size), 0)
+	hashMethod_CType := (*C.HCRYPTHASH)(hashMethod)
+
+	result := C.CryptGetHashParam(*hashMethod_CType, C.HP_HASHVAL, (*C.uchar)(&cbToBeSigned[0]), (*C.ulong)(&size), 0)
 
 	// [ ] TODO: обработать возможные ошибки https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptgethashparam#return-value
 	if result == Failure {
 		return nil, errors.New("Не удалось получить значение хэша")
 	}
+
 	return &cbToBeSigned, nil
-}
-
-func CalculateHashGOST3411_2012_256(cryptoProvider *C.HCRYPTPROV, data []byte) (*[]byte, error) {
-	hashMethod, error := TakeHashMethod(cryptoProvider, GOST3411_2012_256)
-
-	if error != nil {
-		return nil, error
-	}
-
-	defer ReleaseHashMethod(hashMethod)
-
-	result := C.CryptHashData(*hashMethod, (*C.uchar)(&data[0]), (C.ulong)(len(data)), 0)
-
-	// [ ] TODO: обработать варианты ошибок https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-crypthashdata#return-value
-	if result == Failure {
-		return nil, errors.New("Не удалось сформировать данные для хэширования")
-	}
-
-	cbToBeSigned, error := ReadHashValue(hashMethod, Size256)
-
-	if error != nil {
-		return nil, error
-	}
-
-	return cbToBeSigned, nil
-}
-
-func main() {
-	fmt.Println("Going to call another C function!")
-
-	csp, error := TakeCSP(GOST2001)
-
-	if error != nil {
-		panic(error)
-	}
-
-	defer ReleaseCSP(csp)
-
-	var data = []byte{10, 25}
-
-	hash, error := CalculateHashGOST3411_2012_256(csp, data)
-
-	if error != nil {
-		panic(error)
-	}
-
-	fmt.Println(hash)
 }
