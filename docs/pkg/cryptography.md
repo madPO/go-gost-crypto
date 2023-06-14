@@ -34,7 +34,7 @@ if error != nil {
 
 defer release()
 
-var data = []byte{10, 25}
+var data = []byte("Hello world")
 
 hash, error := calculateHash(&data)
 
@@ -42,7 +42,7 @@ if error != nil {
     panic(error)
 }
 
-fmt.Println(hash)
+fmt.Println(hex.EncodeToString(*hash))
 ```
 
 Функции `Create***HashMethod` возвращают 3 значения
@@ -60,7 +60,7 @@ if error != nil {
 
 defer release()
 
-var data = []byte{10, 25}
+var data = []byte("Hello world")
 
 hash, error := calculateHash(&data)
 
@@ -68,7 +68,7 @@ if error != nil {
     panic(error)
 }
 
-fmt.Println(hash)
+fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **ГОСТ 3411-2012-256**
@@ -81,7 +81,7 @@ if error != nil {
 
 defer release()
 
-var data = []byte{10, 25}
+var data = []byte("Hello world")
 
 hash, error := calculateHash(&data)
 
@@ -89,7 +89,7 @@ if error != nil {
     panic(error)
 }
 
-fmt.Println(hash)
+fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **ГОСТ 3411-2012-512**
@@ -102,7 +102,7 @@ if error != nil {
 
 defer release()
 
-var data = []byte{10, 25}
+var data = []byte("Hello world")
 
 hash, error := calculateHash(&data)
 
@@ -110,5 +110,89 @@ if error != nil {
     panic(error)
 }
 
-fmt.Println(hash)
+fmt.Println(hex.EncodeToString(*hash))
+```
+
+**MD5**
+```go
+release, calculateHash, error := cryptography.CreateMD5HashMethod()
+
+if error != nil {
+    panic(error)
+}
+
+defer release()
+
+var data = []byte("Hello world")
+
+hash, error := calculateHash(&data)
+
+if error != nil {
+    panic(error)
+}
+
+fmt.Println(hex.EncodeToString(*hash))
+```
+
+**SHA256**
+```go
+release, calculateHash, error := cryptography.CreateSha256HashMethod()
+
+if error != nil {
+    panic(error)
+}
+
+defer release()
+
+var data = []byte("Hello world")
+
+hash, error := calculateHash(&data)
+
+if error != nil {
+    panic(error)
+}
+
+fmt.Println(hex.EncodeToString(*hash))
+```
+
+**SHA384**
+```go
+release, calculateHash, error := cryptography.CreateSha384HashMethod()
+
+if error != nil {
+    panic(error)
+}
+
+defer release()
+
+var data = []byte("Hello world")
+
+hash, error := calculateHash(&data)
+
+if error != nil {
+    panic(error)
+}
+
+fmt.Println(hex.EncodeToString(*hash))
+```
+
+**SHA512**
+```go
+release, calculateHash, error := cryptography.CreateSha512HashMethod()
+
+if error != nil {
+    panic(error)
+}
+
+defer release()
+
+var data = []byte("Hello world")
+
+hash, error := calculateHash(&data)
+
+if error != nil {
+    panic(error)
+}
+
+fmt.Println(hex.EncodeToString(*hash))
 ```
