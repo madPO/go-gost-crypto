@@ -1,6 +1,9 @@
 package cryptography
 
 import (
+	"crypto/md5"
+	"crypto/sha256"
+	"crypto/sha512"
 	"errors"
 
 	"github.com/madpo/go-gost-crypto/pkg/wrapper"
@@ -111,5 +114,45 @@ func CreateGOST3411_2012_512HashMethod() (release func(), calculateHash func(*[]
 			releaseCSP()
 		}, func(data *[]byte) (*[]byte, error) {
 			return wrapper.CalculateHashValue(hashMethod, wrapper.Size512, data)
+		}, nil
+}
+
+func CreateMD5HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+	return func() {},
+		func(data *[]byte) (*[]byte, error) {
+			result := md5.Sum(*data)
+			value := result[:]
+
+			return &value, nil
+		}, nil
+}
+
+func CreateSha256HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+	return func() {},
+		func(data *[]byte) (*[]byte, error) {
+			result := sha256.Sum256(*data)
+			value := result[:]
+
+			return &value, nil
+		}, nil
+}
+
+func CreateSha384HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+	return func() {},
+		func(data *[]byte) (*[]byte, error) {
+			result := sha512.Sum384(*data)
+			value := result[:]
+
+			return &value, nil
+		}, nil
+}
+
+func CreateSha512HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+	return func() {},
+		func(data *[]byte) (*[]byte, error) {
+			result := sha512.Sum512(*data)
+			value := result[:]
+
+			return &value, nil
 		}, nil
 }
