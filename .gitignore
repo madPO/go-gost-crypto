@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/go,obsidian
-# Edit at https://www.toptal.com/developers/gitignore?templates=go,obsidian
+# Created by https://www.toptal.com/developers/gitignore/api/go,obsidian,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=go,obsidian,visualstudiocode
 
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
@@ -35,4 +35,23 @@ go.work
 !.obsidian/graph.json
 !.obsidian/hotkeys.json
 
-# End of https://www.toptal.com/developers/gitignore/api/go,obsidian
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+# End of https://www.toptal.com/developers/gitignore/api/go,obsidian,visualstudiocode
