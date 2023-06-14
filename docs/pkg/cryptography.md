@@ -4,7 +4,7 @@
 ## Установка
 Добавить в `go.mod` зависимости: 
 
-```golang
+```go
 require github.com/madpo/go-gost-crypto/pkg/wrapper v1.0.0
 require github.com/madpo/go-gost-crypto/pkg/cryptography v1.0.0
 ```
@@ -19,13 +19,13 @@ go mod tidy
 
 В `.go` файл добавить импорт
 
-```golang
+```go
 import "github.com/madpo/go-gost-crypto/pkg/cryptography"
 ```
 
 ### Хэширование
 Пример вычисления хэша по ГОСТ
-```golang
+```go
 release, calculateHash, error := cryptography.CreateGOST3411_2012_256HashMethod()
 
 if error != nil {
@@ -51,7 +51,7 @@ fmt.Println(hash)
 - `error` -- ошибка при попытке сформировать функцию вычисления хэша
 
 **ГОСТ 3411**
-```golang
+```go
 release, calculateHash, error := cryptography.CreateGOST3411HashMethod()
 
 if error != nil {
@@ -72,7 +72,7 @@ fmt.Println(hash)
 ```
 
 **ГОСТ 3411-2012-256**
-```golang
+```go
 release, calculateHash, error := cryptography.CreateGOST3411_2012_256HashMethod()
 
 if error != nil {
@@ -93,7 +93,7 @@ fmt.Println(hash)
 ```
 
 **ГОСТ 3411-2012-512**
-```golang
+```go
 release, calculateHash, error := cryptography.CreateGOST3411_2012_512HashMethod()
 
 if error != nil {
