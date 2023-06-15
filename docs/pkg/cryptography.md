@@ -34,15 +34,13 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
 
 Функции `Create***HashMethod` возвращают 3 значения
@@ -60,15 +58,13 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **ГОСТ 3411-2012-256**
@@ -81,15 +77,13 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **ГОСТ 3411-2012-512**
@@ -102,15 +96,13 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **MD5**
@@ -123,15 +115,13 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **SHA256**
@@ -144,15 +134,13 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **SHA384**
@@ -165,15 +153,13 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
 
 **SHA512**
@@ -186,13 +172,11 @@ if error != nil {
 
 defer release()
 
-var data = []byte("Hello world")
+var reader = strings.NewReader("Hello world")
 
-hash, error := calculateHash(&data)
+hash, error := calculateHash(reader)
 
 if error != nil {
     panic(error)
 }
-
-fmt.Println(hex.EncodeToString(*hash))
 ```
