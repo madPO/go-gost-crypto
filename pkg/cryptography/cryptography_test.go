@@ -3,6 +3,7 @@ package cryptography
 import (
 	"encoding/hex"
 	"io"
+	"os"
 	"strings"
 	"testing"
 )
@@ -218,6 +219,99 @@ func Test_GOST3411_2012_512_Success(t *testing.T) {
 
 	result := hex.EncodeToString(data)
 	want := "5c175af4bf26f229b865f754d71b2dd4ca3a35c2a27e017ad48fc3cd3064087bf49190dbd35dc84e25abea30b223a9eb3130cb567c7f523178be46a9f6b5e50e"
+
+	if result != want {
+		t.Errorf("Ожидался ГОСТ 3411-2012-512 хэш %s. Получен %s", want, result)
+	}
+}
+
+func Test_GOST3411File_Success(t *testing.T) {
+	release, calculateHash, error := CreateGOST3411HashMethod()
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	defer release()
+
+	reader, error := os.Open("../../test/HashTest.xml")
+
+	hash, error := calculateHash(reader)
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	data, error := io.ReadAll(hash)
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	want := "aeba43b2827ed7faf86044e7656351c02f6f9272e10d688c8c733428288fcd92"
+	result := hex.EncodeToString(data)
+
+	if result != want {
+		t.Errorf("Ожидался ГОСТ 3411 хэш %s. Получен %s", want, result)
+	}
+}
+
+func Test_3411_2012_256File_Success(t *testing.T) {
+	release, calculateHash, error := CreateGOST3411_2012_256HashMethod()
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	defer release()
+
+	reader, error := os.Open("../../test/HashTest.xml")
+
+	hash, error := calculateHash(reader)
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	data, error := io.ReadAll(hash)
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	want := "76be5277543045641557f526f0ec7c4fb7be8f0e3ae92364aa120a539edb77cb"
+	result := hex.EncodeToString(data)
+
+	if result != want {
+		t.Errorf("Ожидался ГОСТ 3411-2012-256 хэш %s. Получен %s", want, result)
+	}
+}
+
+func Test_3411_2012_512File_Success(t *testing.T) {
+	release, calculateHash, error := CreateGOST3411_2012_512HashMethod()
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	defer release()
+
+	reader, error := os.Open("../../test/HashTest.xml")
+
+	hash, error := calculateHash(reader)
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	data, error := io.ReadAll(hash)
+
+	if error != nil {
+		t.Error(error)
+	}
+
+	want := "acfdf5fc58deb73f307487aef6581abc3c67b36f557f220e4354f57cab90621084043266673f9cafe9538ff5195c3ff783bbe90a25aedce41b9e6229c17172b7"
+	result := hex.EncodeToString(data)
 
 	if result != want {
 		t.Errorf("Ожидался ГОСТ 3411-2012-512 хэш %s. Получен %s", want, result)

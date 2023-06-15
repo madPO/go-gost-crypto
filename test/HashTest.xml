@@ -1,0 +1,13 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Body>
+		<nst:GetRequestRequest xmlns:ns3="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/faults/1.3" xmlns:ns5="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/directive/1.3" xmlns:ns4="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/routing/1.3" xmlns:nsb="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.3" xmlns:nst="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.3">
+			<nsb:MessageTypeSelector Id="SIGNED_BY_CONSUMER">
+				<nsb:NamespaceURI>urn://x-artefacts-zags-rogdzp/root/112-23/4.0.1</nsb:NamespaceURI>
+				<nsb:RootElementLocalName>Request</nsb:RootElementLocalName>
+				<nsb:Timestamp>2020-08-19T11:31:55.7639468+03:00</nsb:Timestamp>
+			</nsb:MessageTypeSelector>
+			<nst:CallerInformationSystemSignature>
+			</nst:CallerInformationSystemSignature>
+		</nst:GetRequestRequest>
+	</soapenv:Body>
+</soapenv:Envelope>
