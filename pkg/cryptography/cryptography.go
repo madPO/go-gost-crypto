@@ -1,10 +1,12 @@
 package cryptography
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/sha256"
 	"crypto/sha512"
 	"errors"
+	"io"
 
 	"github.com/madpo/go-gost-crypto/pkg/wrapper"
 )
@@ -35,7 +37,7 @@ func CreateCSP(cspType wrapper.CSPType) (release func(), createHashMethod func(w
 }
 
 // фабрика методов хэширования
-func CreateHashMethod(hashType wrapper.HashType) (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateHashMethod(hashType wrapper.HashType) (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	switch hashType {
 	case wrapper.GOST3411:
 		return CreateGOST3411HashMethod()
@@ -49,7 +51,7 @@ func CreateHashMethod(hashType wrapper.HashType) (release func(), calculateHash 
 }
 
 // получить метод вычисления хэша по ГОСТ 3411
-func CreateGOST3411HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateGOST3411HashMethod() (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	releaseCSP, createHashMethod, exception := CreateCSP(wrapper.GOST2012_512)
 
 	if exception != nil {
@@ -66,13 +68,33 @@ func CreateGOST3411HashMethod() (release func(), calculateHash func(*[]byte) (*[
 			wrapper.ReleaseHashMethod(hashMethod)
 
 			releaseCSP()
-		}, func(data *[]byte) (*[]byte, error) {
-			return wrapper.CalculateHashValue(hashMethod, wrapper.Size256, data)
+		}, func(reader io.Reader) (io.Reader, error) {
+			buffer := make([]byte, 256)
+			count, error := reader.Read(buffer)
+
+			for error == nil {
+				value := buffer[:count]
+				error = wrapper.ApplyHash(hashMethod, &value)
+
+				if error != nil {
+					return nil, error
+				}
+
+				count, error = reader.Read(buffer)
+			}
+
+			result, error := wrapper.CalculateHashValue(hashMethod, wrapper.Size256)
+
+			if error != nil {
+				return nil, error
+			}
+
+			return bytes.NewReader(*result), nil
 		}, nil
 }
 
 // получить метод вычисления хэша по ГОСТ 3411-2012-256
-func CreateGOST3411_2012_256HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateGOST3411_2012_256HashMethod() (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	releaseCSP, createHashMethod, exception := CreateCSP(wrapper.GOST2012_512)
 
 	if exception != nil {
@@ -89,13 +111,33 @@ func CreateGOST3411_2012_256HashMethod() (release func(), calculateHash func(*[]
 			wrapper.ReleaseHashMethod(hashMethod)
 
 			releaseCSP()
-		}, func(data *[]byte) (*[]byte, error) {
-			return wrapper.CalculateHashValue(hashMethod, wrapper.Size256, data)
+		}, func(reader io.Reader) (io.Reader, error) {
+			buffer := make([]byte, 256)
+			count, error := reader.Read(buffer)
+
+			for error == nil {
+				value := buffer[:count]
+				error = wrapper.ApplyHash(hashMethod, &value)
+
+				if error != nil {
+					return nil, error
+				}
+
+				count, error = reader.Read(buffer)
+			}
+
+			result, error := wrapper.CalculateHashValue(hashMethod, wrapper.Size256)
+
+			if error != nil {
+				return nil, error
+			}
+
+			return bytes.NewReader(*result), nil
 		}, nil
 }
 
 // получить метод вычисления хэша по ГОСТ 3411-2012-512
-func CreateGOST3411_2012_512HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateGOST3411_2012_512HashMethod() (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	releaseCSP, createHashMethod, exception := CreateCSP(wrapper.GOST2012_512)
 
 	if exception != nil {
@@ -112,47 +154,119 @@ func CreateGOST3411_2012_512HashMethod() (release func(), calculateHash func(*[]
 			wrapper.ReleaseHashMethod(hashMethod)
 
 			releaseCSP()
-		}, func(data *[]byte) (*[]byte, error) {
-			return wrapper.CalculateHashValue(hashMethod, wrapper.Size512, data)
+		}, func(reader io.Reader) (io.Reader, error) {
+			buffer := make([]byte, 256)
+			count, error := reader.Read(buffer)
+
+			for error == nil {
+				value := buffer[:count]
+				error = wrapper.ApplyHash(hashMethod, &value)
+
+				if error != nil {
+					return nil, error
+				}
+
+				count, error = reader.Read(buffer)
+			}
+
+			result, error := wrapper.CalculateHashValue(hashMethod, wrapper.Size512)
+
+			if error != nil {
+				return nil, error
+			}
+
+			return bytes.NewReader(*result), nil
 		}, nil
 }
 
-func CreateMD5HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateMD5HashMethod() (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	return func() {},
-		func(data *[]byte) (*[]byte, error) {
-			result := md5.Sum(*data)
-			value := result[:]
+		func(reader io.Reader) (io.Reader, error) {
+			hashMethod := md5.New()
 
-			return &value, nil
+			buffer := make([]byte, 256)
+			count, error := reader.Read(buffer)
+			for error == nil {
+				hashMethod.Write(buffer[:count])
+
+				count, error = reader.Read(buffer)
+			}
+
+			if error != io.EOF {
+				return nil, error
+			}
+
+			result := hashMethod.Sum(nil)
+
+			return bytes.NewReader(result), nil
 		}, nil
 }
 
-func CreateSha256HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateSha256HashMethod() (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	return func() {},
-		func(data *[]byte) (*[]byte, error) {
-			result := sha256.Sum256(*data)
-			value := result[:]
+		func(reader io.Reader) (io.Reader, error) {
+			hashMethod := sha256.New()
 
-			return &value, nil
+			buffer := make([]byte, 256)
+			count, error := reader.Read(buffer)
+			for error == nil {
+				hashMethod.Write(buffer[:count])
+
+				count, error = reader.Read(buffer)
+			}
+
+			if error != io.EOF {
+				return nil, error
+			}
+
+			result := hashMethod.Sum(nil)
+
+			return bytes.NewReader(result), nil
 		}, nil
 }
 
-func CreateSha384HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateSha384HashMethod() (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	return func() {},
-		func(data *[]byte) (*[]byte, error) {
-			result := sha512.Sum384(*data)
-			value := result[:]
+		func(reader io.Reader) (io.Reader, error) {
+			hashMethod := sha512.New384()
 
-			return &value, nil
+			buffer := make([]byte, 256)
+			count, error := reader.Read(buffer)
+			for error == nil {
+				hashMethod.Write(buffer[:count])
+
+				count, error = reader.Read(buffer)
+			}
+
+			if error != io.EOF {
+				return nil, error
+			}
+
+			result := hashMethod.Sum(nil)
+
+			return bytes.NewReader(result), nil
 		}, nil
 }
 
-func CreateSha512HashMethod() (release func(), calculateHash func(*[]byte) (*[]byte, error), exception error) {
+func CreateSha512HashMethod() (release func(), calculateHash func(io.Reader) (io.Reader, error), exception error) {
 	return func() {},
-		func(data *[]byte) (*[]byte, error) {
-			result := sha512.Sum512(*data)
-			value := result[:]
+		func(reader io.Reader) (io.Reader, error) {
+			hashMethod := sha512.New()
 
-			return &value, nil
+			buffer := make([]byte, 256)
+			count, error := reader.Read(buffer)
+			for error == nil {
+				hashMethod.Write(buffer[:count])
+
+				count, error = reader.Read(buffer)
+			}
+
+			if error != io.EOF {
+				return nil, error
+			}
+
+			result := hashMethod.Sum(nil)
+
+			return bytes.NewReader(result), nil
 		}, nil
 }

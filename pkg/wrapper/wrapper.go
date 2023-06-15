@@ -288,25 +288,31 @@ func ReleaseHashMethod(hashMethod *CryptoHash) {
 }
 
 // вычислить хэш
-func CalculateHashValue(hashMethod *CryptoHash, size HSize, data *[]byte) (*[]byte, error) {
-	hashMethod_CType := (*C.HCRYPTHASH)(hashMethod)
+func ApplyHash(hashObject *CryptoHash, data *[]byte) error {
+	hashObject_CType := (*C.HCRYPTHASH)(hashObject)
 
 	value := *data
-	result := C.CryptHashData(*hashMethod_CType, (*C.uchar)(&value[0]), (C.ulong)(len(value)), 0)
+	result := C.CryptHashData(*hashObject_CType, (*C.uchar)(&value[0]), (C.ulong)(len(value)), 0)
 
 	if result == Failure {
 		errorCode := C.GetLastError()
-		return nil, &CalculateHashException{code: (int64)(errorCode)}
+		return &CalculateHashException{code: (int64)(errorCode)}
 	}
 
-	cbToBeSigned := make([]byte, size)
+	return nil
+}
 
-	result = C.CryptGetHashParam(*hashMethod_CType, C.HP_HASHVAL, (*C.uchar)(&cbToBeSigned[0]), (*C.ulong)(&size), 0)
+// вычислить хэш
+func CalculateHashValue(hashObject *CryptoHash, size HSize) (*[]byte, error) {
+	hashObject_CType := (*C.HCRYPTHASH)(hashObject)
+	hashBuffer := make([]byte, size)
+
+	result := C.CryptGetHashParam(*hashObject_CType, C.HP_HASHVAL, (*C.uchar)(&hashBuffer[0]), (*C.ulong)(&size), 0)
 
 	if result == Failure {
 		errorCode := C.GetLastError()
 		return nil, &GetHashException{code: (int64)(errorCode)}
 	}
 
-	return &cbToBeSigned, nil
+	return &hashBuffer, nil
 }
